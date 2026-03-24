@@ -1,238 +1,203 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mapa Interativo - Estádio Azteca</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      overflow: hidden;
-    }
-    .map-wrap {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 18px;
-      transition: transform .45s ease, opacity .45s ease;
-    }
-    .map-wrap.hide {
-      opacity: 0;
-      transform: scale(1.03);
-      pointer-events: none;
-    }
-    .map {
-      position: relative;
-      width: min(1200px, 94vw);
-    }
-    .map img {
-      width: 100%;
-      display: block;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.10);
-    }
-    .hotspot {
-      position: absolute;
-      border-radius: 50%;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      padding: 0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Interativo - Estádio Azteca</title>
 
-    .screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      padding: 40px 28px;
-      z-index: 20;
-      opacity: 0;
-      visibility: hidden;
-      transform: scale(1.03);
-      transition: opacity .5s ease, transform .5s ease, visibility 0s linear .5s;
-    }
-    .screen.show {
-      opacity: 1;
-      visibility: visible;
-      transform: scale(1);
-      transition: opacity .5s ease, transform .5s ease, visibility 0s linear 0s;
-    }
-    .screen-content {
-      width: min(900px, 92vw);
-      text-align: center;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity .45s ease .12s, transform .45s ease .12s;
-    }
-    .screen.show .screen-content {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .screen h1 {
-      margin: 0 0 18px;
-      font-size: clamp(32px, 5vw, 64px);
-      line-height: 1.05;
-    }
-    .screen p {
-      margin: 0 auto 26px;
-      font-size: clamp(18px, 2.4vw, 28px);
-      line-height: 1.5;
-      max-width: 800px;
-    }
-    .back-btn {
-      display: inline-block;
-      background: rgba(255,255,255,.18);
-      color: white;
-      border: 2px solid rgba(255,255,255,.45);
-      border-radius: 999px;
-      padding: 14px 24px;
-      font-size: 18px;
-      cursor: pointer;
-      backdrop-filter: blur(6px);
-      transition: transform .2s ease, background .2s ease;
-    }
-    .back-btn:hover {
-      background: rgba(255,255,255,.24);
-      transform: translateY(-1px);
-    }
+<style>
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#111;
+  overflow:hidden;
+}
 
-    .green-bg { background: #16a34a; }
-    .red-bg { background: #dc2626; }
-    .blue-bg { background: #2563eb; }
-    .orange-bg { background: #ea580c; }
-    .gray-bg { background: #4b5563; }
-  </style>
+/* MAPA */
+.map-wrap{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  transition:.4s;
+}
+.map-wrap.hide{
+  opacity:0;
+  transform:scale(1.05);
+}
+
+.map{
+  position:relative;
+  width:90%;
+  max-width:1100px;
+}
+
+.map img{
+  width:100%;
+  border-radius:12px;
+}
+
+/* CÍRCULOS */
+.hotspot{
+  position:absolute;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+/* TELAS */
+.screen{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  opacity:0;
+  pointer-events:none;
+  transition:.5s;
+}
+
+.screen.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.content{
+  text-align:center;
+  transform:scale(.9);
+  opacity:0;
+  transition:.4s;
+}
+
+.screen.show .content{
+  transform:scale(1);
+  opacity:1;
+}
+
+h1{font-size:50px;}
+p{font-size:22px;}
+
+.back{
+  padding:12px 25px;
+  border-radius:30px;
+  border:2px solid white;
+  background:transparent;
+  color:white;
+  cursor:pointer;
+}
+
+/* CORES */
+.green{background:#16a34a;}
+.red{background:#dc2626;}
+.blue{background:#2563eb;}
+.orange{background:#ea580c;}
+.gray{background:#444;}
+</style>
 </head>
+
 <body>
 
 <div class="map-wrap" id="home">
-  <div class="map">
-    <img src="https://raw.githubusercontent.com/dinheir0mp4-beep/mapa-azteca/main/mapa_estadio_azteca_clean.png" alt="Mapa do Estádio Azteca">
+<div class="map">
 
-    <button class="hotspot" style="left:43.7%;top:33.3%;width:12.5%;height:16.6%;" data-target="campo" aria-label="Campo"></button>
-    <button class="hotspot" style="left:37.5%;top:25%;width:25%;height:33.3%;" data-target="arquib" aria-label="Arquibancadas"></button>
-    <button class="hotspot" style="left:62.5%;top:4%;width:25%;height:25%;" data-target="estac" aria-label="Estacionamento"></button>
-    <button class="hotspot" style="left:68.7%;top:66.6%;width:18%;height:25%;" data-target="aux" aria-label="Campos auxiliares"></button>
-    <button class="hotspot" style="left:10%;top:60%;width:10%;height:20%;" data-target="vias" aria-label="Vias"></button>
-    <button class="hotspot" style="left:80%;top:2%;width:15%;height:15%;" data-target="urb" aria-label="Área urbana"></button>
-  </div>
+<!-- IMAGEM EMBUTIDA -->
+<img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Estadio_Azteca_3D_render.png">
+
+<button class="hotspot" style="left:43%;top:33%;width:13%;height:17%;" data="campo"></button>
+<button class="hotspot" style="left:37%;top:25%;width:25%;height:33%;" data="arquib"></button>
+<button class="hotspot" style="left:62%;top:5%;width:25%;height:25%;" data="estac"></button>
+<button class="hotspot" style="left:68%;top:66%;width:18%;height:25%;" data="aux"></button>
+<button class="hotspot" style="left:10%;top:60%;width:10%;height:20%;" data="vias"></button>
+<button class="hotspot" style="left:80%;top:2%;width:15%;height:15%;" data="urb"></button>
+
+</div>
 </div>
 
-<section class="screen green-bg" id="campo">
-  <div class="screen-content">
-    <h1>Campo</h1>
-    <p>Área principal onde acontecem os jogos.</p>
-    <button class="back-btn">Voltar ao mapa</button>
-  </div>
-</section>
+<!-- TELAS -->
+<div class="screen green" id="campo">
+<div class="content">
+<h1>Campo</h1>
+<p>Área principal onde acontecem os jogos.</p>
+<button class="back">Voltar</button>
+</div>
+</div>
 
-<section class="screen red-bg" id="arquib">
-  <div class="screen-content">
-    <h1>Arquibancadas</h1>
-    <p>Estrutura ao redor do campo para o público.</p>
-    <button class="back-btn">Voltar ao mapa</button>
-  </div>
-</section>
+<div class="screen red" id="arquib">
+<div class="content">
+<h1>Arquibancadas</h1>
+<p>Estrutura ao redor do campo para o público.</p>
+<button class="back">Voltar</button>
+</div>
+</div>
 
-<section class="screen blue-bg" id="estac">
-  <div class="screen-content">
-    <h1>Estacionamento</h1>
-    <p>Espaço de apoio para veículos e acesso externo.</p>
-    <button class="back-btn">Voltar ao mapa</button>
-  </div>
-</section>
+<div class="screen blue" id="estac">
+<div class="content">
+<h1>Estacionamento</h1>
+<p>Área para veículos e acesso externo.</p>
+<button class="back">Voltar</button>
+</div>
+</div>
 
-<section class="screen orange-bg" id="aux">
-  <div class="screen-content">
-    <h1>Campos auxiliares</h1>
-    <p>Áreas de treino e apoio esportivo.</p>
-    <button class="back-btn">Voltar ao mapa</button>
-  </div>
-</section>
+<div class="screen orange" id="aux">
+<div class="content">
+<h1>Campos auxiliares</h1>
+<p>Espaços de treino e apoio esportivo.</p>
+<button class="back">Voltar</button>
+</div>
+</div>
 
-<section class="screen gray-bg" id="vias">
-  <div class="screen-content">
-    <h1>Vias</h1>
-    <p>Ruas e acessos que levam ao estádio.</p>
-    <button class="back-btn">Voltar ao mapa</button>
-  </div>
-</section>
+<div class="screen gray" id="vias">
+<div class="content">
+<h1>Vias</h1>
+<p>Ruas e acessos ao estádio.</p>
+<button class="back">Voltar</button>
+</div>
+</div>
 
-<section class="screen gray-bg" id="urb">
-  <div class="screen-content">
-    <h1>Área urbana</h1>
-    <p>Região com casas e prédios no entorno.</p>
-    <button class="back-btn">Voltar ao mapa</button>
-  </div>
-</section>
+<div class="screen gray" id="urb">
+<div class="content">
+<h1>Área urbana</h1>
+<p>Casas e prédios ao redor do estádio.</p>
+<button class="back">Voltar</button>
+</div>
+</div>
 
 <script>
-  const screens = document.querySelectorAll('.screen');
-  const home = document.getElementById('home');
+const home = document.getElementById("home");
+const screens = document.querySelectorAll(".screen");
 
-  function playClick() {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(720, ctx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.07);
-      g.gain.setValueAtTime(0.0001, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
-      o.connect(g);
-      g.connect(ctx.destination);
-      o.start();
-      o.stop(ctx.currentTime + 0.13);
-    } catch (e) {}
+/* SOM */
+function som(){
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = 600;
+  gain.gain.value = 0.05;
+  osc.start();
+  setTimeout(()=>osc.stop(),100);
+}
+
+/* ABRIR */
+document.querySelectorAll(".hotspot").forEach(btn=>{
+  btn.onclick=()=>{
+    som();
+    home.classList.add("hide");
+    screens.forEach(s=>s.classList.remove("show"));
+    document.getElementById(btn.getAttribute("data")).classList.add("show");
   }
+});
 
-  function openScreen(id) {
-    screens.forEach(s => s.classList.remove('show'));
-    const target = document.getElementById(id);
-    if (target) {
-      playClick();
-      home.classList.add('hide');
-      setTimeout(() => {
-        target.classList.add('show');
-        history.replaceState(null, '', '#' + id);
-      }, 140);
-    }
+/* VOLTAR */
+document.querySelectorAll(".back").forEach(b=>{
+  b.onclick=()=>{
+    som();
+    screens.forEach(s=>s.classList.remove("show"));
+    setTimeout(()=>home.classList.remove("hide"),200);
   }
-
-  function closeScreens() {
-    playClick();
-    screens.forEach(s => s.classList.remove('show'));
-    setTimeout(() => {
-      home.classList.remove('hide');
-      history.replaceState(null, '', window.location.pathname);
-    }, 180);
-  }
-
-  document.querySelectorAll('.hotspot').forEach(btn => {
-    btn.addEventListener('click', () => openScreen(btn.dataset.target));
-  });
-
-  document.querySelectorAll('.back-btn').forEach(btn => {
-    btn.addEventListener('click', closeScreens);
-  });
-
-  if (location.hash) {
-    const id = location.hash.replace('#', '');
-    home.classList.add('hide');
-    const target = document.getElementById(id);
-    if (target) target.classList.add('show');
-  }
+});
 </script>
 
 </body>
